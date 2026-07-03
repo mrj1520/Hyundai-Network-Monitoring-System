@@ -30,9 +30,18 @@ app = FastAPI(
 )
 
 # 2. Configure CORS middleware (cross-origin resource sharing for react/socket)
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://gallant-kindness-production-a88d.up.railway.app"
+]
+_additional_origins = os.getenv("ALLOWED_ORIGINS")
+if _additional_origins:
+    allowed_origins.extend([o.strip() for o in _additional_origins.split(",")])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
