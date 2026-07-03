@@ -152,8 +152,23 @@ def seed_database(db: Session):
     db.commit()
     print("Seeding completed successfully.")
 
+import time
+from sqlalchemy import text
+
+def wait_for_db(engine, retries=10, delay=3):
+    for i in range(retries):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            print("Database is ready.")
+            return True
+        except Exception as e:
+            print(f"Waiting for database... attempt {i+1}/{retries}: {e}")
+            time.sleep(delay)
+    raise RuntimeError("Database not available after multiple retries.")
+
 def run_seeder():
-    # Make sure tables exist
+    wait_for_db(engine)
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:

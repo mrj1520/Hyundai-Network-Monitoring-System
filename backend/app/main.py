@@ -61,7 +61,11 @@ async def startup_event():
     # Setup tables and seed baseline metrics
     logger_info = "Initializing Hyundai Network Database and Lookup structures..."
     print(logger_info)
-    run_seeder()
+    try:
+        run_seeder()
+    except Exception as e:
+        print(f"WARNING: Seeder failed — {e}")
+        print("App will continue without database seed.")
     
     # Start background scheduled backup and cleanup jobs
     SchedulerManager.start()
