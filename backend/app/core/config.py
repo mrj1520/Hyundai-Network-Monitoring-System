@@ -18,7 +18,12 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
     # Database
-    _db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/netpulse")
+    _db_url = (
+        os.getenv("DATABASE_URL") or
+        os.getenv("DATABASE_PRIVATE_URL") or
+        os.getenv("DATABASE_PUBLIC_URL") or
+        "postgresql://postgres:postgres@localhost:5432/netpulse"
+    )
     if _db_url.startswith("postgres://"):
         _db_url = _db_url.replace("postgres://", "postgresql://", 1)
     DATABASE_URL: str = _db_url
