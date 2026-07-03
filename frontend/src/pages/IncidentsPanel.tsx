@@ -56,7 +56,7 @@ export const IncidentsPanel: React.FC = () => {
 
   // 3. Resolve mutation
   const resolveMutation = useMutation({
-    mutationFn: async ({ id, resolution, status }: { id: string; resolution: str; status: string }) => {
+    mutationFn: async ({ id, resolution, status }: { id: string; resolution: string; status: string }) => {
       const response = await fetch(`/api/v1/incidents/${id}/resolve`, {
         method: 'POST',
         headers: {

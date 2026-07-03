@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Cpu, Lock, Mail, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
-const loginSchema = z.zodSchema ? z.zodSchema : z.object({
+const loginSchema = z.object({
   username: z.string().email({ message: "Invalid email address format." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." })
 })

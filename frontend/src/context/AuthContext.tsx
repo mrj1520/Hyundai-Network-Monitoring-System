@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 export interface User {
   id: string
   email: string
-  role: 'Admin' | 'NOC_Engineer' | 'CEO' | 'CTO' | 'COO' | 'Viewer'
+  role: 'Admin' | 'User'
   favorite_dashboard: string
   theme: 'light' | 'dark'
   sidebar_collapsed: boolean
