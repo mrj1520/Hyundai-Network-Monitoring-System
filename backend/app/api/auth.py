@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from app.database.connection import get_db
 from app.core.security import verify_password, create_access_token, get_current_user, get_password_hash, RoleChecker
 from app.models.user import User, DashboardPreference
@@ -15,21 +16,54 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 admin_checker = RoleChecker(allowed_roles=["Admin"])
 
 @router.post("/login")
-def login(request_data: LoginRequest, request: Request, db: Session = Depends(get_db)):
+async def login(request: Request, request_data: Optional[LoginRequest] = None, db: Session = Depends(get_db)):
     """
     Authenticates a user, writes an audit log, and issues a JWT token.
+    Supports both JSON body payload and application/x-www-form-urlencoded form inputs.
     """
-    user = db.query(User).filter(User.email == request_data.username, User.is_deleted == False).first()
+    username = None
+    password = None
+
+    if request_data:
+        username = request_data.username
+        password = request_data.password
+    else:
+        # Check content type
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            try:
+                body = await request.json()
+                username = body.get("username")
+                password = body.get("password")
+            except Exception:
+                pass
+        
+        # Fallback to form data (e.g. Swagger OAuth2 Password Flow)
+        if not username:
+            try:
+                form = await request.form()
+                username = form.get("username") or form.get("email")
+                password = form.get("password")
+            except Exception:
+                pass
+
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username and password are required"
+        )
+
+    user = db.query(User).filter(User.email == username, User.is_deleted == False).first()
     ip_addr = request.client.host if request.client else "127.0.0.1"
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    if not user or not verify_password(request_data.password, user.hashed_password):
+    if not user or not verify_password(password, user.hashed_password):
         # Log failed login attempt
         AuditLogService.log_action(
             db=db,
             action="LOGIN_ATTEMPT",
             old_value=None,
-            new_value={"email": request_data.username},
+            new_value={"email": username},
             ip=ip_addr,
             browser=user_agent,
             result="Failure"
@@ -61,6 +95,8 @@ def login(request_data: LoginRequest, request: Request, db: Session = Depends(ge
     # Prepare response payload
     user_pref = user.preferences
     return {
+        "access_token": access_token,
+        "token_type": "bearer",
         "success": True,
         "message": "Login successful",
         "timestamp": datetime.now(timezone.utc).isoformat(),
