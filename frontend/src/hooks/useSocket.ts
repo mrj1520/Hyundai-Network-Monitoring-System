@@ -50,7 +50,7 @@ export const useSocket = (siteId?: string) => {
     // Connect to backend Socket.IO server
     // FastAPI mounts socketio under /ws or standard root depending on configurations
     // In our app.main: sio_asgi wraps app, meaning standard client path is used
-    const socketUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : window.location.origin
+    const socketUrl = (import.meta.env.VITE_API_URL as string) || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : window.location.origin)
     const socketIo = io(socketUrl, {
       transports: ['websocket'],
       auth: { token }
