@@ -16,6 +16,16 @@ router = APIRouter(prefix="/config", tags=["Configuration"])
 # Enforce Admin verification for system settings and thresholds modifications
 admin_checker = RoleChecker(allowed_roles=["Admin"])
 
+@router.get("/seed")
+def trigger_seed():
+    """Public management endpoint to trigger database seeding."""
+    from app.database.seeder import run_seeder
+    try:
+        run_seeder()
+        return {"success": True, "message": "Database seeded successfully!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Seeding failed: {str(e)}")
+
 @router.get("/thresholds")
 def get_thresholds(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
