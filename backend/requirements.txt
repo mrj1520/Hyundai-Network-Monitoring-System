@@ -1,0 +1,12 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9
+python-socketio[asyncio]>=5.11.0
+apscheduler>=3.10.4
+loguru>=0.7.2
+python-dotenv>=1.0.1
+orjson>=3.9.15
+pydantic[email]>=2.6.4
+bcrypt>=4.1.2
+pyjwt>=2.8.0
