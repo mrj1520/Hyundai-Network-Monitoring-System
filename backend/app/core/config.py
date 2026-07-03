@@ -18,7 +18,10 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/netpulse")
+    _db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/netpulse")
+    if _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL: str = _db_url
 
     # Socket.IO
     SOCKET_PORT: int = int(os.getenv("SOCKET_PORT", 8000))
