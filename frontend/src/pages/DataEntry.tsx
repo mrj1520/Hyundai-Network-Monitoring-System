@@ -87,7 +87,19 @@ export const DataEntry: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ['dashboard-charts'] })
         queryClient.invalidateQueries({ queryKey: ['incidents-list'] })
       } else {
-        setErrorMsg(result.detail || "Metrics submission failed.")
+        const detail = result?.detail
+        let formattedError = "Metrics submission failed."
+        if (typeof detail === 'string') {
+          formattedError = detail
+        } else if (Array.isArray(detail)) {
+          formattedError = detail.map(err => {
+            const locName = Array.isArray(err.loc) ? err.loc[err.loc.length - 1] : 'field'
+            return `${locName}: ${err.msg}`
+          }).join(', ')
+        } else if (detail && typeof detail === 'object') {
+          formattedError = JSON.stringify(detail)
+        }
+        setErrorMsg(formattedError)
       }
     },
     onError: () => {
@@ -121,17 +133,38 @@ export const DataEntry: React.FC = () => {
     e.preventDefault()
     setSuccessMsg(null)
     setErrorMsg(null)
+
+    const dl = parseFloat(formData.download_speed)
+    const ul = parseFloat(formData.upload_speed)
+    const p = parseFloat(formData.ping)
+    const jt = parseFloat(formData.jitter)
+    const pl = parseFloat(formData.packet_loss)
+    const bu = parseFloat(formData.bandwidth_utilization)
+
+    if (isNaN(dl) || isNaN(ul) || isNaN(p) || isNaN(jt) || isNaN(pl) || isNaN(bu)) {
+      setErrorMsg("Please ensure all network and latency metrics are valid numeric values.")
+      return
+    }
+
+    if (pl < 0 || pl > 100) {
+      setErrorMsg("Packet loss percentage must be between 0% and 100%.")
+      return
+    }
+
+    if (bu < 0 || bu > 100) {
+      setErrorMsg("Bandwidth utilization percentage must be between 0% and 100%.")
+      return
+    }
     
-    // Parse speed values to float representation
     const payload = {
       site_id: formData.site_id,
       isp_id: formData.isp_id,
-      download_speed: parseFloat(formData.download_speed),
-      upload_speed: parseFloat(formData.upload_speed),
-      ping: parseFloat(formData.ping),
-      jitter: parseFloat(formData.jitter),
-      packet_loss: parseFloat(formData.packet_loss),
-      bandwidth_utilization: parseFloat(formData.bandwidth_utilization),
+      download_speed: dl,
+      upload_speed: ul,
+      ping: p,
+      jitter: jt,
+      packet_loss: pl,
+      bandwidth_utilization: bu,
       internet_status: formData.internet_status,
       power_status: formData.power_status
     }
@@ -204,7 +237,7 @@ export const DataEntry: React.FC = () => {
 
       {errorMsg && (
         <div className="p-4 rounded-xl flex items-start gap-3 bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-300 text-sm glow-red animate-pulse">
-          <p>{errorMsg}</p>
+          <p>{typeof errorMsg === 'string' ? errorMsg : (errorMsg as any)?.message || JSON.stringify(errorMsg)}</p>
         </div>
       )}
 

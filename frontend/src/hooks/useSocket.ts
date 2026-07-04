@@ -53,7 +53,12 @@ export const useSocket = (siteId?: string) => {
     const socketUrl = (import.meta.env.VITE_API_URL as string) || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : window.location.origin)
     const socketIo = io(socketUrl, {
       transports: ['websocket'],
-      auth: { token }
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
     })
 
     socketIo.on('connect', () => {
