@@ -8,6 +8,11 @@ RUN npm install
 
 # Copy source and build
 COPY . .
+
+# Declare build-arg to accept Railway variables during docker build phase
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # Install serving client
