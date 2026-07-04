@@ -4,6 +4,7 @@ from app.database.connection import get_db
 from app.core.security import RoleChecker, get_current_user
 from app.models.user import User
 from app.schemas.metrics import MetricInput
+from app.models.metrics import HealthScore
 from app.services.data_input import DataInputService
 from app.services.health import HealthService
 from app.repositories import MetricRepository, AlertRepository
@@ -54,9 +55,9 @@ async def input_metrics(
         active_alerts = alert_repo.get_active_alerts(site_id=payload.site_id)
         
         # Calculate recent health score trend for frontend charts
-        health_history = db.query(raw_metric.site.HealthScore.__class__).filter(
-            raw_metric.site.HealthScore.__class__.site_id == payload.site_id
-        ).order_by(raw_metric.site.HealthScore.__class__.created_at.desc()).limit(10).all()
+        health_history = db.query(HealthScore).filter(
+            HealthScore.site_id == payload.site_id
+        ).order_by(HealthScore.created_at.desc()).limit(10).all()
         
         # Compute dynamic availability stats
         avail_stats = HealthService.calculate_availability(db, payload.site_id)
