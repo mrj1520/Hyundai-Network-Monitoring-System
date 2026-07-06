@@ -33,9 +33,10 @@ app = FastAPI(
 allowed_origins = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://hyundaitestnoc-com.up.railway.app",
     "https://gallant-kindness-production-a88d.up.railway.app"
 ]
-_additional_origins = os.getenv("ALLOWED_ORIGINS")
+_additional_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv("CORS_ORIGINS")
 if _additional_origins:
     allowed_origins.extend([o.strip() for o in _additional_origins.split(",")])
 
